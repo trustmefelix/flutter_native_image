@@ -4,8 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 class FlutterNativeImage {
-  static const MethodChannel _channel =
-      const MethodChannel('flutter_native_image');
+  static const MethodChannel _channel = MethodChannel('flutter_native_image');
 
   /// Compress an image
   ///
@@ -14,12 +13,9 @@ class FlutterNativeImage {
   /// [quality] controls how strong the compression should be. (0-100)
   /// Use [targetWidth] and [targetHeight] to resize the image for a specific
   /// target size.
-  static Future<File> compressImage(String fileName,
-      {int percentage = 70,
-      int quality = 70,
-      int targetWidth = 0,
-      int targetHeight = 0}) async {
-    var file = await _channel.invokeMethod("compressImage", {
+  static Future<File?>? compressImage(String fileName,
+      {int? percentage = 70, int? quality = 70, int? targetWidth = 0, int? targetHeight = 0}) async {
+    final file = await _channel.invokeMethod('compressImage', {
       'file': fileName,
       'quality': quality,
       'percentage': percentage,
@@ -27,13 +23,13 @@ class FlutterNativeImage {
       'targetHeight': targetHeight
     });
 
-    return new File(file);
+    return File(file as String);
   }
 
   /// Gets the properties of an image
   ///
   /// Gets the properties of an image given the [fileName].
-  static Future<ImageProperties> getImageProperties(String fileName) async {
+  static Future<ImageProperties?>? getImageProperties(String fileName) async {
     ImageOrientation decodeOrientation(int orientation) {
       // For details, see: https://developer.android.com/reference/android/media/ExifInterface
       switch (orientation) {
@@ -58,12 +54,12 @@ class FlutterNativeImage {
       }
     }
 
-    var properties = Map.from(
-        await _channel.invokeMethod("getImageProperties", {'file': fileName}));
-    return new ImageProperties(
-        width: properties["width"],
-        height: properties["height"],
-        orientation: decodeOrientation(properties["orientation"]));
+    final Map properties =
+        Map.from(await _channel.invokeMethod('getImageProperties', {'file': fileName}) as Map<dynamic, dynamic>);
+    return ImageProperties(
+        width: properties['width'] as int?,
+        height: properties['height'] as int?,
+        orientation: decodeOrientation(properties['orientation'] as int));
   }
 
   /// Crops an image
@@ -71,17 +67,11 @@ class FlutterNativeImage {
   /// Crops the given [fileName].
   /// [originX] and [originY] control from where the image should be cropped.
   /// [width] and [height] control how the image is being cropped.
-  static Future<File> cropImage(
-      String fileName, int originX, int originY, int width, int height) async {
-    var file = await _channel.invokeMethod("cropImage", {
-      'file': fileName,
-      'originX': originX,
-      'originY': originY,
-      'width': width,
-      'height': height
-    });
+  static Future<File?>? cropImage(String? fileName, int? originX, int? originY, int? width, int? height) async {
+    final file = await _channel.invokeMethod(
+        'cropImage', {'file': fileName, 'originX': originX, 'originY': originY, 'width': width, 'height': height});
 
-    return new File(file);
+    return File(file as String);
   }
 }
 
@@ -100,12 +90,9 @@ enum ImageOrientation {
 
 /// Return value of [getImageProperties].
 class ImageProperties {
-  int width;
-  int height;
-  ImageOrientation orientation;
+  ImageProperties({this.width = 0, this.height = 0, this.orientation = ImageOrientation.undefined});
 
-  ImageProperties(
-      {this.width = 0,
-      this.height = 0,
-      this.orientation = ImageOrientation.undefined});
+  int? width;
+  int? height;
+  ImageOrientation? orientation;
 }
